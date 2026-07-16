@@ -1,27 +1,25 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Routes, Route } from "react-router-dom";
+import Login from "@/pages/Login";
+import Dashboard from "@/pages/Dashboard";
+import Clientes from "@/pages/Clientes";
+import Layout from "@/components/layout/Layout";
+import ProtectedRoute from "@/routes/ProtectedRoute";
 
-function App() {
+export default function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary p-8">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Teste de Componentes</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            Se você está vendo isso com um card branco, sombra suave e botão
-            azul, o Shadcn + Tailwind estão funcionando.
-          </p>
-          <div className="flex gap-2">
-            <Button>Botão Padrão</Button>
-            <Button variant="outline">Outline</Button>
-            <Button variant="destructive">Deletar</Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="clientes" element={<Clientes />} />
+      </Route>
+    </Routes>
   );
 }
-
-export default App;
