@@ -7,25 +7,32 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthContext";
 
-export default function Login() {
+export default function Registrar() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { registrar } = useAuth();
   const navigate = useNavigate();
 
   async function handleSubmit(e) {
     e.preventDefault();
     setErro("");
+
+    if (senha !== confirmarSenha) {
+      setErro("As senhas não coincidem.");
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email, senha);
+      await registrar(email, senha);
       navigate("/");
     } catch (err) {
       setErro(
         err.response?.data?.erro ||
-          "Não foi possível entrar. Verifique o backend.",
+          "Não foi possível criar a conta. Verifique o backend.",
       );
     } finally {
       setLoading(false);
@@ -36,7 +43,6 @@ export default function Login() {
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-sidebar px-4">
       <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-indigo-600/30 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl" />
-      <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
 
       <Card className="relative w-full max-w-sm border-0 bg-white/95 shadow-2xl shadow-black/40 backdrop-blur">
         <CardContent className="pt-10 pb-8">
@@ -44,11 +50,9 @@ export default function Login() {
             <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/40">
               <Building2 className="h-7 w-7 text-white" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">
-              Gestão de Clientes
-            </h1>
+            <h1 className="text-xl font-bold tracking-tight">Criar Conta</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Acesse sua conta para continuar
+              Comece a gerenciar seus clientes
             </p>
           </div>
 
@@ -71,6 +75,17 @@ export default function Login() {
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 required
+                minLength={6}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmarSenha">Confirmar senha</Label>
+              <Input
+                id="confirmarSenha"
+                type="password"
+                value={confirmarSenha}
+                onChange={(e) => setConfirmarSenha(e.target.value)}
+                required
               />
             </div>
 
@@ -81,17 +96,17 @@ export default function Login() {
               disabled={loading}
               className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30 hover:opacity-90"
             >
-              {loading ? "Entrando..." : "Entrar"}
+              {loading ? "Criando conta..." : "Criar conta"}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            Ainda não tem conta?{" "}
+            Já tem conta?{" "}
             <Link
-              to="/registrar"
+              to="/login"
               className="font-medium text-primary hover:underline"
             >
-              Criar conta
+              Entrar
             </Link>
           </p>
         </CardContent>

@@ -1,7 +1,6 @@
 import { createContext, useContext, useState } from "react";
+import { loginUsuario, registrarUsuario } from "@/lib/api";
 
-// O backend Flask atual não expõe rota de autenticação.
-// Este contexto simula login localmente (localStorage) até uma rota /login existir no backend.
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -10,10 +9,20 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
-  function login(email) {
-    const fakeUser = { email };
-    localStorage.setItem("gc_user", JSON.stringify(fakeUser));
-    setUser(fakeUser);
+  async function login(email, senha) {
+    const res = await loginUsuario({ email, senha });
+    const { token, usuario } = res.data;
+    const dadosUsuario = { ...usuario, token };
+    localStorage.setItem("gc_user", JSON.stringify(dadosUsuario));
+    setUser(dadosUsuario);
+  }
+
+  async function registrar(email, senha) {
+    const res = await registrarUsuario({ email, senha });
+    const { token, usuario } = res.data;
+    const dadosUsuario = { ...usuario, token };
+    localStorage.setItem("gc_user", JSON.stringify(dadosUsuario));
+    setUser(dadosUsuario);
   }
 
   function logout() {
@@ -22,7 +31,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, login, registrar, logout }}>
       {children}
     </AuthContext.Provider>
   );
