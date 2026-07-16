@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -39,6 +39,25 @@ def inicio():
 def listar_clientes():
     clientes = Cliente.query.all()
     return jsonify([c.to_dict() for c in clientes])
+
+
+@app.route("/clientes", methods=["POST"])
+def criar_cliente():
+    dados = request.get_json()
+
+    if not dados or not dados.get("nome") or not dados.get("email"):
+        return jsonify({"erro": "Nome e email são obrigatórios."}), 400
+
+    novo_cliente = Cliente(
+        nome=dados.get("nome"),
+        email=dados.get("email"),
+        telefone=dados.get("telefone"),
+        empresa=dados.get("empresa"),
+    )
+    db.session.add(novo_cliente)
+    db.session.commit()
+
+    return jsonify(novo_cliente.to_dict()), 201
 
 
 if __name__ == "__main__":
