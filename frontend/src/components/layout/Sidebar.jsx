@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
 
 const links = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/", label: "Painel", icon: LayoutDashboard, end: true },
   { to: "/clientes", label: "Clientes", icon: Users, end: false },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }) {
   const { logout, user } = useAuth();
 
   return (
@@ -31,6 +31,7 @@ export default function Sidebar() {
             key={to}
             to={to}
             end={end}
+            onClick={() => onNavigate?.()}
             className={({ isActive }) =>
               cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",

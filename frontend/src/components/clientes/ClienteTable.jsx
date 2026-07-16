@@ -9,12 +9,74 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ClienteTable({ clientes, onDeletar }) {
+const AVATAR_COLORS = [
+  "bg-indigo-100 text-indigo-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-amber-100 text-amber-700",
+  "bg-rose-100 text-rose-700",
+  "bg-sky-100 text-sky-700",
+  "bg-violet-100 text-violet-700",
+];
+
+function corAvatar(nome) {
+  const soma = (nome || "")
+    .split("")
+    .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return AVATAR_COLORS[soma % AVATAR_COLORS.length];
+}
+
+export default function ClienteTable({ clientes, loading, onDeletar }) {
+  if (loading) {
+    return (
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Cliente</TableHead>
+            <TableHead>Contato</TableHead>
+            <TableHead>Empresa</TableHead>
+            <TableHead className="text-right">Ações</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {[1, 2, 3].map((i) => (
+            <TableRow key={i}>
+              <TableCell>
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <Skeleton className="h-4 w-32" />
+                </div>
+              </TableCell>
+              <TableCell>
+                <Skeleton className="mb-2 h-3 w-40" />
+                <Skeleton className="h-3 w-28" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-5 w-24 rounded-full" />
+              </TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="ml-auto h-8 w-8 rounded-md" />
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    );
+  }
+
   if (!clientes.length) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center text-muted-foreground">
-        <p className="text-sm">Nenhum cliente cadastrado ainda.</p>
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary">
+          <Building className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <p className="text-sm font-medium text-foreground">
+          Nenhum cliente cadastrado
+        </p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Clique em "Novo Cliente" para começar.
+        </p>
       </div>
     );
   }
@@ -34,7 +96,9 @@ export default function ClienteTable({ clientes, onDeletar }) {
           <TableRow key={cliente.id}>
             <TableCell>
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                <div
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold ${corAvatar(cliente.nome)}`}
+                >
                   {cliente.nome?.[0]?.toUpperCase() ?? "?"}
                 </div>
                 <span className="font-medium">{cliente.nome}</span>
@@ -66,7 +130,8 @@ export default function ClienteTable({ clientes, onDeletar }) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => onDeletar(cliente.id)}
+                onClick={() => onDeletar(cliente)}
+                className="hover:bg-destructive/10"
               >
                 <Trash2 className="h-4 w-4 text-destructive" />
               </Button>
