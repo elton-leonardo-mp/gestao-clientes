@@ -15,21 +15,26 @@ export default function Login() {
 
   function handleSubmit(e) {
     e.preventDefault();
-    // Login local (mock) — backend Flask ainda não possui rota de autenticação
     login(email);
     navigate("/");
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-secondary px-4">
-      <Card className="w-full max-w-sm">
-        <CardContent className="pt-8">
-          <div className="mb-6 flex flex-col items-center text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Building2 className="h-6 w-6" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-sidebar px-4">
+      <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-indigo-600/30 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-violet-600/20 blur-3xl" />
+      <div className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
+
+      <Card className="relative w-full max-w-sm border-0 bg-white/95 shadow-2xl shadow-black/40 backdrop-blur">
+        <CardContent className="pt-10 pb-8">
+          <div className="mb-8 flex flex-col items-center text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/40">
+              <Building2 className="h-7 w-7 text-white" />
             </div>
-            <h1 className="text-lg font-semibold">Gestão de Clientes</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl font-bold tracking-tight">
+              Gestão de Clientes
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
               Acesse sua conta para continuar
             </p>
           </div>
@@ -55,7 +60,10 @@ export default function Login() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30 hover:opacity-90"
+            >
               Entrar
             </Button>
           </form>
