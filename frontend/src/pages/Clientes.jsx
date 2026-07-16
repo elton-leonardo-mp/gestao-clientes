@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
@@ -7,6 +8,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import ClienteTable from "@/components/clientes/ClienteTable";
@@ -17,6 +19,10 @@ import { useToast } from "@/context/ToastContext";
 export default function Clientes() {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [modalAberto, setModalAberto] = useState(false);
+  const [clienteEditando, setClienteEditando] = useState(null);
+
   const [clienteParaExcluir, setClienteParaExcluir] = useState(null);
   const [excluindo, setExcluindo] = useState(false);
   const { toast } = useToast();
@@ -32,6 +38,16 @@ export default function Clientes() {
   useEffect(() => {
     carregarClientes();
   }, [carregarClientes]);
+
+  function abrirNovo() {
+    setClienteEditando(null);
+    setModalAberto(true);
+  }
+
+  function abrirEdicao(cliente) {
+    setClienteEditando(cliente);
+    setModalAberto(true);
+  }
 
   async function confirmarExclusao() {
     if (!clienteParaExcluir) return;
@@ -66,7 +82,13 @@ export default function Clientes() {
               : `${clientes.length} cliente(s) cadastrado(s)`}
           </p>
         </div>
-        <ClienteModal onClienteCriado={carregarClientes} />
+        <Button
+          onClick={abrirNovo}
+          className="bg-gradient-to-r from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30 hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" />
+          Novo Cliente
+        </Button>
       </div>
 
       <Card className="overflow-hidden border-0 bg-white/80 shadow-xl shadow-slate-200/70 backdrop-blur">
@@ -74,10 +96,19 @@ export default function Clientes() {
           <ClienteTable
             clientes={clientes}
             loading={loading}
+            onEditar={abrirEdicao}
             onDeletar={setClienteParaExcluir}
           />
         </CardContent>
       </Card>
+
+      <ClienteModal
+        cliente={clienteEditando}
+        open={modalAberto}
+        onOpenChange={setModalAberto}
+        onSalvar={carregarClientes}
+        trigger={null}
+      />
 
       <Dialog
         open={!!clienteParaExcluir}

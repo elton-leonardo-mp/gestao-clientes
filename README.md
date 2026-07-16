@@ -8,7 +8,7 @@ Sistema de gestão de clientes (CRM) full stack, com autenticação, dashboard d
 
 - 🔐 **Autenticação** — tela de login com sessão persistida
 - 📊 **Painel** — métricas em tempo real (total de clientes, empresas distintas)
-- 👥 **Gestão de Clientes** — listagem, cadastro e exclusão, com dados consumidos da API
+- 👥 **Gestão de Clientes** — listagem, cadastro, edição e exclusão, com dados consumidos da API
 - ✅ **Validação de formulário** — validação de e-mail e telefone em tempo real
 - 🔔 **Feedback visual** — notificações toast e modais de confirmação
 - 📱 **Responsivo** — sidebar adaptável para dispositivos móveis
@@ -20,9 +20,11 @@ Sistema de gestão de clientes (CRM) full stack, com autenticação, dashboard d
 | -------------------------------------- | ------------------------------------------ |
 | ![Painel](docs/screenshots/painel.png) | ![Clientes](docs/screenshots/clientes.png) |
 
-| Cadastro de Cliente                                       | Confirmação de Exclusão                                   |
-| --------------------------------------------------------- | --------------------------------------------------------- |
-| ![Modal de cadastro](docs/screenshots/modal-cadastro.png) | ![Modal de exclusão](docs/screenshots/modal-exclusao.png) |
+| Cadastro de Cliente                                       | Edição de Cliente                                     |
+| --------------------------------------------------------- | ----------------------------------------------------- |
+| ![Modal de cadastro](docs/screenshots/modal-cadastro.png) | ![Modal de edição](docs/screenshots/modal-edicao.png) |
+
+![Modal de exclusão](docs/screenshots/modal-exclusao.png)
 
 ![Toast de sucesso](docs/screenshots/toast.png)
 
@@ -65,11 +67,12 @@ gestao-clientes/
 
 ## 🔌 API
 
-| Método | Rota            | Descrição                |
-| ------ | --------------- | ------------------------ |
-| GET    | `/clientes`     | Lista todos os clientes  |
-| POST   | `/clientes`     | Cadastra um novo cliente |
-| DELETE | `/clientes/:id` | Remove um cliente        |
+| Método | Rota            | Descrição                       |
+| ------ | --------------- | ------------------------------- |
+| GET    | `/clientes`     | Lista todos os clientes         |
+| POST   | `/clientes`     | Cadastra um novo cliente        |
+| PUT    | `/clientes/:id` | Atualiza os dados de um cliente |
+| DELETE | `/clientes/:id` | Remove um cliente               |
 
 ## ▶️ Como rodar localmente
 
@@ -109,7 +112,6 @@ O frontend sobe em `http://localhost:5173`. As requisições para `/api/*` são 
 Funcionalidades mapeadas para próximas iterações:
 
 - [ ] Autenticação real (JWT + hash de senha)
-- [ ] Edição de cliente (rota `PUT /clientes/:id`)
 - [ ] Busca e filtros na listagem
 - [ ] Testes automatizados (pytest / React Testing Library)
 - [ ] Deploy em produção

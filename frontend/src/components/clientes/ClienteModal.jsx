@@ -1,30 +1,52 @@
-import { useState } from "react";
-import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { criarCliente } from "@/lib/api";
+import { criarCliente, atualizarCliente } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 
 const initialState = { nome: "", email: "", telefone: "", empresa: "" };
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TELEFONE_REGEX = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
 
-export default function ClienteModal({ onClienteCriado }) {
-  const [open, setOpen] = useState(false);
+export default function ClienteModal({
+  cliente,
+  open,
+  onOpenChange,
+  onSalvar,
+  trigger,
+}) {
   const [form, setForm] = useState(initialState);
   const [erros, setErros] = useState({});
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  const editando = !!cliente;
+
+  useEffect(() => {
+    if (open) {
+      setForm(
+        cliente
+          ? {
+              nome: cliente.nome,
+              email: cliente.email,
+              telefone: cliente.telefone || "",
+              empresa: cliente.empresa || "",
+            }
+          : initialState,
+      );
+      setErros({});
+    }
+  }, [open, cliente]);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -52,17 +74,24 @@ export default function ClienteModal({ onClienteCriado }) {
 
     setLoading(true);
     try {
-      await criarCliente(form);
-      toast({
-        title: "Cliente cadastrado",
-        description: `${form.nome} foi adicionado com sucesso.`,
-      });
-      setForm(initialState);
-      setOpen(false);
-      onClienteCriado();
+      if (editando) {
+        await atualizarCliente(cliente.id, form);
+        toast({
+          title: "Cliente atualizado",
+          description: `${form.nome} foi atualizado com sucesso.`,
+        });
+      } else {
+        await criarCliente(form);
+        toast({
+          title: "Cliente cadastrado",
+          description: `${form.nome} foi adicionado com sucesso.`,
+        });
+      }
+      onOpenChange(false);
+      onSalvar();
     } catch (err) {
       toast({
-        title: "Erro ao cadastrar",
+        title: editando ? "Erro ao atualizar" : "Erro ao cadastrar",
         description: "Não foi possível salvar o cliente. Verifique o backend.",
         variant: "destructive",
       });
@@ -72,18 +101,17 @@ export default function ClienteModal({ onClienteCriado }) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="bg-gradient-to-r from-indigo-500 to-violet-600 shadow-lg shadow-indigo-500/30 hover:opacity-90">
-          <Plus className="h-4 w-4" />
-          Novo Cliente
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {trigger}
       <DialogContent className="border-0 shadow-2xl">
         <DialogHeader>
-          <DialogTitle>Cadastrar Cliente</DialogTitle>
+          <DialogTitle>
+            {editando ? "Editar Cliente" : "Cadastrar Cliente"}
+          </DialogTitle>
           <DialogDescription>
-            Preencha os dados abaixo para adicionar um novo cliente.
+            {editando
+              ? "Atualize os dados do cliente abaixo."
+              : "Preencha os dados abaixo para adicionar um novo cliente."}
           </DialogDescription>
         </DialogHeader>
 
@@ -140,7 +168,7 @@ export default function ClienteModal({ onClienteCriado }) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => onOpenChange(false)}
             >
               Cancelar
             </Button>
@@ -149,7 +177,11 @@ export default function ClienteModal({ onClienteCriado }) {
               disabled={loading}
               className="bg-gradient-to-r from-indigo-500 to-violet-600 hover:opacity-90"
             >
-              {loading ? "Salvando..." : "Salvar Cliente"}
+              {loading
+                ? "Salvando..."
+                : editando
+                  ? "Salvar Alterações"
+                  : "Salvar Cliente"}
             </Button>
           </DialogFooter>
         </form>

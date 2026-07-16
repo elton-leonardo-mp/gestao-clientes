@@ -63,6 +63,28 @@ def criar_cliente():
     return jsonify(novo_cliente.to_dict()), 201
 
 
+@app.route("/clientes/<int:id>", methods=["PUT"])
+def atualizar_cliente(id):
+    cliente = Cliente.query.get(id)
+
+    if not cliente:
+        return jsonify({"erro": "Cliente não encontrado."}), 404
+
+    dados = request.get_json()
+
+    if not dados or not dados.get("nome") or not dados.get("email"):
+        return jsonify({"erro": "Nome e email são obrigatórios."}), 400
+
+    cliente.nome = dados.get("nome")
+    cliente.email = dados.get("email")
+    cliente.telefone = dados.get("telefone")
+    cliente.empresa = dados.get("empresa")
+
+    db.session.commit()
+
+    return jsonify(cliente.to_dict()), 200
+
+
 @app.route("/clientes/<int:id>", methods=["DELETE"])
 def deletar_cliente(id):
     cliente = Cliente.query.get(id)

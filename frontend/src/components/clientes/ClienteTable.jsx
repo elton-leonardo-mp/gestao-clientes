@@ -1,4 +1,4 @@
-import { Trash2, Mail, Phone, Building } from "lucide-react";
+import { Trash2, Pencil, Mail, Phone, Building } from "lucide-react";
 import {
   Table,
   TableHeader,
@@ -27,7 +27,12 @@ function corAvatar(nome) {
   return AVATAR_COLORS[soma % AVATAR_COLORS.length];
 }
 
-export default function ClienteTable({ clientes, loading, onDeletar }) {
+export default function ClienteTable({
+  clientes,
+  loading,
+  onEditar,
+  onDeletar,
+}) {
   if (loading) {
     return (
       <Table>
@@ -127,14 +132,24 @@ export default function ClienteTable({ clientes, loading, onDeletar }) {
               )}
             </TableCell>
             <TableCell className="text-right">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onDeletar(cliente)}
-                className="hover:bg-destructive/10"
-              >
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
+              <div className="flex justify-end gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEditar(cliente)}
+                  className="hover:bg-indigo-50"
+                >
+                  <Pencil className="h-4 w-4 text-indigo-600" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDeletar(cliente)}
+                  className="hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
             </TableCell>
           </TableRow>
         ))}
