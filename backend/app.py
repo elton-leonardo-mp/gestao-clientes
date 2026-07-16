@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -9,7 +10,11 @@ app.config["SECRET_KEY"] = "troque-essa-chave-em-producao"
 
 CORS(app)
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///clientes.db"
+database_url = os.environ.get("DATABASE_URL", "sqlite:///clientes.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
