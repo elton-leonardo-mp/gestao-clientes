@@ -9,6 +9,28 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const saved = localStorage.getItem("gc_user");
+  if (saved) {
+    const { token } = JSON.parse(saved);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("gc_user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
+);
+
 export const registrarUsuario = (data) => api.post("/registrar", data);
 export const loginUsuario = (data) => api.post("/login", data);
 

@@ -1,9 +1,10 @@
 import os
-from flask import Flask, jsonify, request
+from functools import wraps
+from flask import Flask, jsonify, request, g
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
-from itsdangerous import URLSafeTimedSerializer, BadSignature
+from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "troque-essa-chave-em-producao"
@@ -36,6 +37,7 @@ class Cliente(db.Model):
     email = db.Column(db.String(120), nullable=False)
     telefone = db.Column(db.String(30))
     empresa = db.Column(db.String(120))
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
 
     def to_dict(self):
         return {
@@ -51,12 +53,35 @@ with app.app_context():
     db.create_all()
 
 
+# ---------- AUTENTICAÇÃO / MIDDLEWARE ----------
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization", "")
+
+        if not auth_header.startswith("Bearer "):
+            return jsonify({"erro": "Token de autenticação ausente."}), 401
+
+        token = auth_header.split(" ", 1)[1]
+
+        try:
+            dados = serializer.loads(token, max_age=60 * 60 * 24 * 7)  # 7 dias
+        except SignatureExpired:
+            return jsonify({"erro": "Sessão expirada. Faça login novamente."}), 401
+        except BadSignature:
+            return jsonify({"erro": "Token inválido."}), 401
+
+        g.usuario_id = dados.get("user_id")
+        return f(*args, **kwargs)
+
+    return decorated
+
+
 @app.route("/")
 def inicio():
     return "Página Inicial"
 
-
-# ---------- AUTENTICAÇÃO ----------
 
 @app.route("/registrar", methods=["POST"])
 def registrar():
@@ -96,15 +121,17 @@ def login():
     return jsonify({"token": token, "usuario": usuario.to_dict()}), 200
 
 
-# ---------- CLIENTES ----------
+# ---------- CLIENTES (protegidas + isoladas por usuário) ----------
 
 @app.route("/clientes", methods=["GET"])
+@login_required
 def listar_clientes():
-    clientes = Cliente.query.all()
+    clientes = Cliente.query.filter_by(usuario_id=g.usuario_id).all()
     return jsonify([c.to_dict() for c in clientes])
 
 
 @app.route("/clientes", methods=["POST"])
+@login_required
 def criar_cliente():
     dados = request.get_json()
 
@@ -116,6 +143,7 @@ def criar_cliente():
         email=dados.get("email"),
         telefone=dados.get("telefone"),
         empresa=dados.get("empresa"),
+        usuario_id=g.usuario_id,
     )
     db.session.add(novo_cliente)
     db.session.commit()
@@ -124,8 +152,9 @@ def criar_cliente():
 
 
 @app.route("/clientes/<int:id>", methods=["PUT"])
+@login_required
 def atualizar_cliente(id):
-    cliente = Cliente.query.get(id)
+    cliente = Cliente.query.filter_by(id=id, usuario_id=g.usuario_id).first()
 
     if not cliente:
         return jsonify({"erro": "Cliente não encontrado."}), 404
@@ -146,8 +175,9 @@ def atualizar_cliente(id):
 
 
 @app.route("/clientes/<int:id>", methods=["DELETE"])
+@login_required
 def deletar_cliente(id):
-    cliente = Cliente.query.get(id)
+    cliente = Cliente.query.filter_by(id=id, usuario_id=g.usuario_id).first()
 
     if not cliente:
         return jsonify({"erro": "Cliente não encontrado."}), 404
