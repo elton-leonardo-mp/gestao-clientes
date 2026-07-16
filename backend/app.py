@@ -60,5 +60,18 @@ def criar_cliente():
     return jsonify(novo_cliente.to_dict()), 201
 
 
+@app.route("/clientes/<int:id>", methods=["DELETE"])
+def deletar_cliente(id):
+    cliente = Cliente.query.get(id)
+
+    if not cliente:
+        return jsonify({"erro": "Cliente não encontrado."}), 404
+
+    db.session.delete(cliente)
+    db.session.commit()
+
+    return jsonify({"mensagem": "Cliente deletado com sucesso."}), 200
+
+
 if __name__ == "__main__":
     app.run(debug=True)
