@@ -1,12 +1,14 @@
 # Gestão de Clientes
 
-Sistema de gestão de clientes (CRM) full stack, com autenticação, dashboard de métricas e CRUD completo de clientes. Construído do zero como projeto de estudo, com commits incrementais documentando cada etapa do desenvolvimento.
+Sistema de gestão de clientes (CRM) full stack, com autenticação real, dashboard de métricas e CRUD completo de clientes. Construído do zero como projeto de estudo, com commits incrementais documentando cada etapa do desenvolvimento.
+
+🔗 **[Acessar sistema em produção](https://gestao-clientes-roan.vercel.app)**
 
 ![Login](docs/screenshots/login.png)
 
 ## ✨ Funcionalidades
 
-- 🔐 **Autenticação** — tela de login com sessão persistida
+- 🔐 **Autenticação real** — cadastro de conta, login com senha criptografada (hash), validação no backend
 - 📊 **Painel** — métricas em tempo real (total de clientes, empresas distintas)
 - 👥 **Gestão de Clientes** — listagem, cadastro, edição e exclusão, com dados consumidos da API
 - ✅ **Validação de formulário** — validação de e-mail e telefone em tempo real
@@ -67,12 +69,24 @@ gestao-clientes/
 
 ## 🔌 API
 
-| Método | Rota            | Descrição                       |
-| ------ | --------------- | ------------------------------- |
-| GET    | `/clientes`     | Lista todos os clientes         |
-| POST   | `/clientes`     | Cadastra um novo cliente        |
-| PUT    | `/clientes/:id` | Atualiza os dados de um cliente |
-| DELETE | `/clientes/:id` | Remove um cliente               |
+| Método | Rota            | Descrição                           |
+| ------ | --------------- | ----------------------------------- |
+| POST   | `/registrar`    | Cria uma nova conta de usuário      |
+| POST   | `/login`        | Autentica e retorna token de sessão |
+| GET    | `/clientes`     | Lista todos os clientes             |
+| POST   | `/clientes`     | Cadastra um novo cliente            |
+| PUT    | `/clientes/:id` | Atualiza os dados de um cliente     |
+| DELETE | `/clientes/:id` | Remove um cliente                   |
+
+## ☁️ Deploy
+
+| Camada         | Serviço           | URL                                                                        |
+| -------------- | ----------------- | -------------------------------------------------------------------------- |
+| Frontend       | Vercel            | [gestao-clientes-roan.vercel.app](https://gestao-clientes-roan.vercel.app) |
+| Backend        | Render            | gestao-clientes.onrender.com                                               |
+| Banco de dados | Render PostgreSQL | —                                                                          |
+
+> ⚠️ Os planos gratuitos utilizados possuem limitações: o backend "dorme" após períodos de inatividade (primeira requisição pode levar ~30-50s) e o banco PostgreSQL free do Render expira periodicamente, exigindo recriação.
 
 ## ▶️ Como rodar localmente
 
@@ -111,10 +125,9 @@ O frontend sobe em `http://localhost:5173`. As requisições para `/api/*` são 
 
 Funcionalidades mapeadas para próximas iterações:
 
-- [ ] Autenticação real (JWT + hash de senha)
 - [ ] Busca e filtros na listagem
 - [ ] Testes automatizados (pytest / React Testing Library)
-- [ ] Deploy em produção
+- [ ] Banco de dados persistente sem expiração (upgrade de plano)
 
 ## 📝 Sobre o desenvolvimento
 
