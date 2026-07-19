@@ -100,11 +100,7 @@ def login_required(f):
 def inicio():
     return "Página Inicial"
 
-@app.route("/reset-db-temporario-xyz123")
-def reset_db_temporario():
-    db.drop_all()
-    db.create_all()
-    return jsonify({"mensagem": "Banco resetado com sucesso."})
+
 
 @app.route("/registrar", methods=["POST"])
 def registrar():
