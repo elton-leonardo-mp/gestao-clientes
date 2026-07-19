@@ -83,15 +83,6 @@ def inicio():
     return "Página Inicial"
 
 
-# ---------- ROTA TEMPORÁRIA DE RESET (REMOVER DEPOIS DE USAR) ----------
-
-@app.route("/reset-db-temporario-xyz123")
-def reset_db_temporario():
-    db.drop_all()
-    db.create_all()
-    return jsonify({"mensagem": "Banco resetado com sucesso."})
-
-
 @app.route("/registrar", methods=["POST"])
 def registrar():
     dados = request.get_json()
