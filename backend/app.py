@@ -37,6 +37,7 @@ class Cliente(db.Model):
     email = db.Column(db.String(120), nullable=False)
     telefone = db.Column(db.String(30))
     empresa = db.Column(db.String(120))
+    endereco = db.Column(db.String(255))
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
 
     def to_dict(self):
@@ -46,6 +47,23 @@ class Cliente(db.Model):
             "email": self.email,
             "telefone": self.telefone,
             "empresa": self.empresa,
+            "endereco": self.endereco,
+        }
+
+
+class Servico(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_servico = db.Column(db.String(120), nullable=False)
+    status = db.Column(db.String(20), nullable=False, default="pendente")  # pendente | andamento | concluido
+    cliente_id = db.Column(db.Integer, db.ForeignKey("cliente.id"), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey("usuario.id"), nullable=False)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "tipo_servico": self.tipo_servico,
+            "status": self.status,
+            "cliente_id": self.cliente_id,
         }
 
 
@@ -66,7 +84,7 @@ def login_required(f):
         token = auth_header.split(" ", 1)[1]
 
         try:
-            dados = serializer.loads(token, max_age=60 * 60 * 24 * 7)  # 7 dias
+            dados = serializer.loads(token, max_age=60 * 60 * 24 * 7)
         except SignatureExpired:
             return jsonify({"erro": "Sessão expirada. Faça login novamente."}), 401
         except BadSignature:
@@ -121,13 +139,24 @@ def login():
     return jsonify({"token": token, "usuario": usuario.to_dict()}), 200
 
 
-# ---------- CLIENTES (protegidas + isoladas por usuário) ----------
+# ---------- CLIENTES ----------
 
 @app.route("/clientes", methods=["GET"])
 @login_required
 def listar_clientes():
     clientes = Cliente.query.filter_by(usuario_id=g.usuario_id).all()
     return jsonify([c.to_dict() for c in clientes])
+
+
+@app.route("/clientes/<int:id>", methods=["GET"])
+@login_required
+def obter_cliente(id):
+    cliente = Cliente.query.filter_by(id=id, usuario_id=g.usuario_id).first()
+
+    if not cliente:
+        return jsonify({"erro": "Cliente não encontrado."}), 404
+
+    return jsonify(cliente.to_dict())
 
 
 @app.route("/clientes", methods=["POST"])
@@ -143,6 +172,7 @@ def criar_cliente():
         email=dados.get("email"),
         telefone=dados.get("telefone"),
         empresa=dados.get("empresa"),
+        endereco=dados.get("endereco"),
         usuario_id=g.usuario_id,
     )
     db.session.add(novo_cliente)
@@ -168,6 +198,7 @@ def atualizar_cliente(id):
     cliente.email = dados.get("email")
     cliente.telefone = dados.get("telefone")
     cliente.empresa = dados.get("empresa")
+    cliente.endereco = dados.get("endereco")
 
     db.session.commit()
 
@@ -186,6 +217,111 @@ def deletar_cliente(id):
     db.session.commit()
 
     return jsonify({"mensagem": "Cliente deletado com sucesso."}), 200
+
+
+# ---------- SERVIÇOS ----------
+
+@app.route("/clientes/<int:cliente_id>/servicos", methods=["GET"])
+@login_required
+def listar_servicos(cliente_id):
+    cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=g.usuario_id).first()
+    if not cliente:
+        return jsonify({"erro": "Cliente não encontrado."}), 404
+
+    servicos = Servico.query.filter_by(cliente_id=cliente_id, usuario_id=g.usuario_id).all()
+    return jsonify([s.to_dict() for s in servicos])
+
+
+@app.route("/clientes/<int:cliente_id>/servicos", methods=["POST"])
+@login_required
+def criar_servico(cliente_id):
+    cliente = Cliente.query.filter_by(id=cliente_id, usuario_id=g.usuario_id).first()
+    if not cliente:
+        return jsonify({"erro": "Cliente não encontrado."}), 404
+
+    dados = request.get_json()
+
+    if not dados or not dados.get("tipo_servico"):
+        return jsonify({"erro": "Tipo de serviço é obrigatório."}), 400
+
+    status = dados.get("status", "pendente")
+    if status not in ("pendente", "andamento", "concluido"):
+        return jsonify({"erro": "Status inválido."}), 400
+
+    novo_servico = Servico(
+        tipo_servico=dados.get("tipo_servico"),
+        status=status,
+        cliente_id=cliente_id,
+        usuario_id=g.usuario_id,
+    )
+    db.session.add(novo_servico)
+    db.session.commit()
+
+    return jsonify(novo_servico.to_dict()), 201
+
+
+@app.route("/servicos/<int:id>", methods=["PUT"])
+@login_required
+def atualizar_servico(id):
+    servico = Servico.query.filter_by(id=id, usuario_id=g.usuario_id).first()
+
+    if not servico:
+        return jsonify({"erro": "Serviço não encontrado."}), 404
+
+    dados = request.get_json()
+
+    if not dados or not dados.get("tipo_servico"):
+        return jsonify({"erro": "Tipo de serviço é obrigatório."}), 400
+
+    status = dados.get("status", servico.status)
+    if status not in ("pendente", "andamento", "concluido"):
+        return jsonify({"erro": "Status inválido."}), 400
+
+    servico.tipo_servico = dados.get("tipo_servico")
+    servico.status = status
+
+    db.session.commit()
+
+    return jsonify(servico.to_dict()), 200
+
+
+@app.route("/servicos/<int:id>", methods=["DELETE"])
+@login_required
+def deletar_servico(id):
+    servico = Servico.query.filter_by(id=id, usuario_id=g.usuario_id).first()
+
+    if not servico:
+        return jsonify({"erro": "Serviço não encontrado."}), 404
+
+    db.session.delete(servico)
+    db.session.commit()
+
+    return jsonify({"mensagem": "Serviço deletado com sucesso."}), 200
+
+
+@app.route("/servicos/resumo", methods=["GET"])
+@login_required
+def resumo_servicos():
+    servicos = (
+        db.session.query(Servico, Cliente.nome)
+        .join(Cliente, Servico.cliente_id == Cliente.id)
+        .filter(Servico.usuario_id == g.usuario_id)
+        .all()
+    )
+
+    resumo = {"pendente": [], "andamento": [], "concluido": []}
+
+    for servico, nome_cliente in servicos:
+        resumo[servico.status].append(
+            {
+                "cliente_id": servico.cliente_id,
+                "cliente_nome": nome_cliente,
+                "tipo_servico": servico.tipo_servico,
+                "servico_id": servico.id,
+            }
+        )
+
+    return jsonify(resumo)
 
 
 if __name__ == "__main__":
