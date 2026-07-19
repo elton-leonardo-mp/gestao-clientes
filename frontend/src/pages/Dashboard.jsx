@@ -7,20 +7,96 @@ import {
   ArrowUpRight,
   ArrowRight,
   Sparkles,
+  Clock,
+  Loader,
+  CheckCircle2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { listarClientes } from "@/lib/api";
+import { listarClientes, resumoServicos } from "@/lib/api";
+
+const STATUS_CONFIG = [
+  {
+    key: "pendente",
+    label: "Pendentes",
+    icon: Clock,
+    headerBg: "bg-amber-500",
+    chipBg: "bg-amber-50",
+    chipText: "text-amber-700",
+  },
+  {
+    key: "andamento",
+    label: "Em Andamento",
+    icon: Loader,
+    headerBg: "bg-sky-500",
+    chipBg: "bg-sky-50",
+    chipText: "text-sky-700",
+  },
+  {
+    key: "concluido",
+    label: "Concluídos",
+    icon: CheckCircle2,
+    headerBg: "bg-emerald-500",
+    chipBg: "bg-emerald-50",
+    chipText: "text-emerald-700",
+  },
+];
+
+const AVATAR_COLORS = [
+  "bg-indigo-100 text-indigo-700",
+  "bg-emerald-100 text-emerald-700",
+  "bg-amber-100 text-amber-700",
+  "bg-rose-100 text-rose-700",
+  "bg-sky-100 text-sky-700",
+  "bg-violet-100 text-violet-700",
+];
+
+function corAvatar(nome) {
+  const soma = (nome || "")
+    .split("")
+    .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  return AVATAR_COLORS[soma % AVATAR_COLORS.length];
+}
+
+function agruparPorCliente(itens) {
+  const grupos = [];
+  const indice = new Map();
+
+  for (const item of itens) {
+    if (!indice.has(item.cliente_id)) {
+      indice.set(item.cliente_id, grupos.length);
+      grupos.push({
+        cliente_id: item.cliente_id,
+        cliente_nome: item.cliente_nome,
+        servicos: [],
+      });
+    }
+    grupos[indice.get(item.cliente_id)].servicos.push(item);
+  }
+
+  return grupos;
+}
 
 export default function Dashboard() {
   const [clientes, setClientes] = useState([]);
+  const [resumo, setResumo] = useState({
+    pendente: [],
+    andamento: [],
+    concluido: [],
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    listarClientes()
-      .then((res) => setClientes(res.data))
-      .catch(() => setClientes([]))
+    Promise.all([listarClientes(), resumoServicos()])
+      .then(([resClientes, resResumo]) => {
+        setClientes(resClientes.data);
+        setResumo(resResumo.data);
+      })
+      .catch(() => {
+        setClientes([]);
+        setResumo({ pendente: [], andamento: [], concluido: [] });
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -105,6 +181,75 @@ export default function Dashboard() {
               </Card>
             ))}
       </div>
+
+      {!loading && (
+        <div className="mt-6">
+          <h2 className="mb-4 text-lg font-semibold">Serviços por Status</h2>
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
+            {STATUS_CONFIG.map(
+              ({ key, label, icon: Icon, headerBg, chipBg, chipText }) => {
+                const grupos = agruparPorCliente(resumo[key] || []);
+
+                return (
+                  <Card
+                    key={key}
+                    className="overflow-hidden border-0 bg-white/80 shadow-xl shadow-slate-200/70 backdrop-blur"
+                  >
+                    <div
+                      className={`flex items-center gap-2.5 px-5 py-4 ${headerBg}`}
+                    >
+                      <Icon className="h-4 w-4 text-white" />
+                      <span className="text-sm font-semibold text-white">
+                        {label}
+                      </span>
+                      <span className="ml-auto flex h-6 min-w-6 items-center justify-center rounded-full bg-white/25 px-2 text-xs font-bold text-white">
+                        {resumo[key]?.length || 0}
+                      </span>
+                    </div>
+
+                    <CardContent className="max-h-96 space-y-3 overflow-y-auto p-4">
+                      {grupos.length === 0 ? (
+                        <p className="py-6 text-center text-sm text-muted-foreground">
+                          Nenhum serviço neste status.
+                        </p>
+                      ) : (
+                        grupos.map((grupo) => (
+                          <Link
+                            key={grupo.cliente_id}
+                            to={`/clientes/${grupo.cliente_id}`}
+                            className="block rounded-xl border border-border bg-white p-3 transition-shadow hover:shadow-md"
+                          >
+                            <div className="mb-2 flex items-center gap-2.5">
+                              <div
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${corAvatar(grupo.cliente_nome)}`}
+                              >
+                                {grupo.cliente_nome?.[0]?.toUpperCase() ?? "?"}
+                              </div>
+                              <span className="text-sm font-semibold text-foreground">
+                                {grupo.cliente_nome}
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {grupo.servicos.map((s) => (
+                                <span
+                                  key={s.servico_id}
+                                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${chipBg} ${chipText}`}
+                                >
+                                  {s.tipo_servico}
+                                </span>
+                              ))}
+                            </div>
+                          </Link>
+                        ))
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              },
+            )}
+          </div>
+        </div>
+      )}
 
       {!loading && totalClientes === 0 && (
         <Card className="mt-6 overflow-hidden border-0 bg-gradient-to-br from-indigo-500 to-violet-600 shadow-xl shadow-indigo-500/30">

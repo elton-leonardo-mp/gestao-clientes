@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Trash2, Pencil, Mail, Phone, Building } from "lucide-react";
 import {
   Table,
@@ -33,6 +34,8 @@ export default function ClienteTable({
   onEditar,
   onDeletar,
 }) {
+  const navigate = useNavigate();
+
   if (loading) {
     return (
       <Table>
@@ -98,7 +101,11 @@ export default function ClienteTable({
       </TableHeader>
       <TableBody>
         {clientes.map((cliente) => (
-          <TableRow key={cliente.id}>
+          <TableRow
+            key={cliente.id}
+            className="cursor-pointer"
+            onClick={() => navigate(`/clientes/${cliente.id}`)}
+          >
             <TableCell>
               <div className="flex items-center gap-3">
                 <div
@@ -131,7 +138,10 @@ export default function ClienteTable({
                 <span className="text-sm text-muted-foreground">—</span>
               )}
             </TableCell>
-            <TableCell className="text-right">
+            <TableCell
+              className="text-right"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="flex justify-end gap-1">
                 <Button
                   variant="ghost"

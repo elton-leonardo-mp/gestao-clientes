@@ -35,8 +35,17 @@ export const registrarUsuario = (data) => api.post("/registrar", data);
 export const loginUsuario = (data) => api.post("/login", data);
 
 export const listarClientes = () => api.get("/clientes");
+export const obterCliente = (id) => api.get(`/clientes/${id}`);
 export const criarCliente = (data) => api.post("/clientes", data);
 export const atualizarCliente = (id, data) => api.put(`/clientes/${id}`, data);
 export const deletarCliente = (id) => api.delete(`/clientes/${id}`);
+
+export const listarServicos = (clienteId) =>
+  api.get(`/clientes/${clienteId}/servicos`);
+export const criarServico = (clienteId, data) =>
+  api.post(`/clientes/${clienteId}/servicos`, data);
+export const atualizarServico = (id, data) => api.put(`/servicos/${id}`, data);
+export const deletarServico = (id) => api.delete(`/servicos/${id}`);
+export const resumoServicos = () => api.get("/servicos/resumo");
 
 export default api;

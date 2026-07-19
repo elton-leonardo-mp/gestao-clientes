@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +13,13 @@ import {
 import { criarCliente, atualizarCliente } from "@/lib/api";
 import { useToast } from "@/context/ToastContext";
 
-const initialState = { nome: "", email: "", telefone: "", empresa: "" };
+const initialState = {
+  nome: "",
+  email: "",
+  telefone: "",
+  empresa: "",
+  endereco: "",
+};
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const TELEFONE_REGEX = /^\(?\d{2}\)?\s?9?\d{4}-?\d{4}$/;
 
@@ -23,7 +28,6 @@ export default function ClienteModal({
   open,
   onOpenChange,
   onSalvar,
-  trigger,
 }) {
   const [form, setForm] = useState(initialState);
   const [erros, setErros] = useState({});
@@ -41,6 +45,7 @@ export default function ClienteModal({
               email: cliente.email,
               telefone: cliente.telefone || "",
               empresa: cliente.empresa || "",
+              endereco: cliente.endereco || "",
             }
           : initialState,
       );
@@ -102,7 +107,6 @@ export default function ClienteModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {trigger}
       <DialogContent className="border-0 shadow-2xl">
         <DialogHeader>
           <DialogTitle>
@@ -160,6 +164,15 @@ export default function ClienteModal({
               id="empresa"
               name="empresa"
               value={form.empresa}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="endereco">Endereço</Label>
+            <Input
+              id="endereco"
+              name="endereco"
+              value={form.endereco}
               onChange={handleChange}
             />
           </div>

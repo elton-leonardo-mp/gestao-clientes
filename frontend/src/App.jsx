@@ -3,6 +3,7 @@ import Login from "@/pages/Login";
 import Registrar from "@/pages/Registrar";
 import Dashboard from "@/pages/Dashboard";
 import Clientes from "@/pages/Clientes";
+import ClienteDetalhes from "@/pages/ClienteDetalhes";
 import Layout from "@/components/layout/Layout";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 
@@ -21,6 +22,7 @@ export default function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="clientes" element={<Clientes />} />
+        <Route path="clientes/:id" element={<ClienteDetalhes />} />
       </Route>
     </Routes>
   );
