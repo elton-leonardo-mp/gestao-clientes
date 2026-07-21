@@ -100,8 +100,6 @@ def login_required(f):
 def inicio():
     return "Página Inicial"
 
-
-
 @app.route("/registrar", methods=["POST"])
 def registrar():
     dados = request.get_json()

@@ -11,6 +11,8 @@ Sistema de gestão de clientes (CRM) full stack, com autenticação real, dashbo
 - 🔐 **Autenticação real** — cadastro de conta, login com senha criptografada (hash), validação no backend
 - 📊 **Painel** — métricas em tempo real (total de clientes, empresas distintas)
 - 👥 **Gestão de Clientes** — listagem, cadastro, edição e exclusão, com dados consumidos da API
+- 📋 **Gestão de Serviços por Cliente** — cada cliente possui uma página de detalhes com serviços organizados por status (Pendente, Em Andamento, Concluído)
+- 📊 **Painel Kanban de Status** — visão consolidada de todos os serviços agrupados por status e por cliente, com navegação direta para os detalhes
 - ✅ **Validação de formulário** — validação de e-mail e telefone em tempo real
 - 🔔 **Feedback visual** — notificações toast e modais de confirmação
 - 📱 **Responsivo** — sidebar adaptável para dispositivos móveis
@@ -18,13 +20,17 @@ Sistema de gestão de clientes (CRM) full stack, com autenticação real, dashbo
 
 ## 🖥️ Telas
 
-| Painel                                 | Clientes                                   |
+| Painel (Kanban de Status)              | Clientes                                   |
 | -------------------------------------- | ------------------------------------------ |
 | ![Painel](docs/screenshots/painel.png) | ![Clientes](docs/screenshots/clientes.png) |
 
-| Cadastro de Cliente                                       | Edição de Cliente                                     |
-| --------------------------------------------------------- | ----------------------------------------------------- |
-| ![Modal de cadastro](docs/screenshots/modal-cadastro.png) | ![Modal de edição](docs/screenshots/modal-edicao.png) |
+| Detalhes do Cliente e Serviços                                | Cadastro de Cliente                                       |
+| ------------------------------------------------------------- | --------------------------------------------------------- |
+| ![Detalhes do cliente](docs/screenshots/cliente-detalhes.png) | ![Modal de cadastro](docs/screenshots/modal-cadastro.png) |
+
+| Edição de Cliente                                     | Novo Serviço                                            |
+| ----------------------------------------------------- | ------------------------------------------------------- |
+| ![Modal de edição](docs/screenshots/modal-edicao.png) | ![Modal de serviço](docs/screenshots/modal-servico.png) |
 
 ![Modal de exclusão](docs/screenshots/modal-exclusao.png)
 
@@ -58,25 +64,31 @@ gestao-clientes/
 └── frontend/
     └── src/
         ├── components/
-        │   ├── ui/          # Componentes base (Button, Card, Dialog, Table...)
+        │   ├── ui/          # Componentes base (Button, Card, Dialog, Table, Select...)
         │   ├── layout/      # Sidebar, Layout
-        │   └── clientes/    # ClienteTable, ClienteModal
+        │   └── clientes/    # ClienteTable, ClienteModal, ServicoTable, ServicoModal
         ├── context/         # AuthContext, ToastContext
-        ├── pages/           # Login, Dashboard, Clientes
+        ├── pages/           # Login, Registrar, Dashboard, Clientes, ClienteDetalhes
         ├── routes/          # ProtectedRoute
         └── lib/             # api.js (Axios), utils.js
 ```
 
 ## 🔌 API
 
-| Método | Rota            | Descrição                           |
-| ------ | --------------- | ----------------------------------- |
-| POST   | `/registrar`    | Cria uma nova conta de usuário      |
-| POST   | `/login`        | Autentica e retorna token de sessão |
-| GET    | `/clientes`     | Lista todos os clientes             |
-| POST   | `/clientes`     | Cadastra um novo cliente            |
-| PUT    | `/clientes/:id` | Atualiza os dados de um cliente     |
-| DELETE | `/clientes/:id` | Remove um cliente                   |
+| Método | Rota                     | Descrição                                                 |
+| ------ | ------------------------ | --------------------------------------------------------- |
+| POST   | `/registrar`             | Cria uma nova conta de usuário                            |
+| POST   | `/login`                 | Autentica e retorna token de sessão                       |
+| GET    | `/clientes`              | Lista todos os clientes                                   |
+| GET    | `/clientes/:id`          | Obtém os dados de um cliente específico                   |
+| POST   | `/clientes`              | Cadastra um novo cliente                                  |
+| PUT    | `/clientes/:id`          | Atualiza os dados de um cliente                           |
+| DELETE | `/clientes/:id`          | Remove um cliente                                         |
+| GET    | `/clientes/:id/servicos` | Lista os serviços de um cliente                           |
+| POST   | `/clientes/:id/servicos` | Cadastra um novo serviço para o cliente                   |
+| PUT    | `/servicos/:id`          | Atualiza um serviço (inclusive o status)                  |
+| DELETE | `/servicos/:id`          | Remove um serviço                                         |
+| GET    | `/servicos/resumo`       | Retorna todos os serviços do usuário agrupados por status |
 
 ## ☁️ Deploy
 
@@ -125,6 +137,7 @@ O frontend sobe em `http://localhost:5173`. As requisições para `/api/*` são 
 
 Funcionalidades mapeadas para próximas iterações:
 
+- [ ] Recuperação de senha
 - [ ] Busca e filtros na listagem
 - [ ] Testes automatizados (pytest / React Testing Library)
 - [ ] Banco de dados persistente sem expiração (upgrade de plano)
